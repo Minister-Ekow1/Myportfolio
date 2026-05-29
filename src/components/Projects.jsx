@@ -11,7 +11,7 @@ const projects = [
     accent: "from-cyan-500/10 to-teal-500/10",
     dot: "bg-cyan-400",
     number: "01",
-    live: "#",
+    live: "https://django-wedding-site.onrender.com/",
     github: "https://github.com/Minister-Ekow1/django_wedding_site",
     image: profileImg,
   },

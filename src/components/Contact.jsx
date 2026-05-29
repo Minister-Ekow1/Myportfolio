@@ -1,6 +1,13 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion } from "framer-motion";
-import { FaGithub, FaLinkedin, FaEnvelope, FaPhone } from "react-icons/fa";
+import {
+  FaGithub,
+  FaLinkedin,
+  FaEnvelope,
+  FaPhone,
+  FaWhatsapp
+} from "react-icons/fa";
+import emailjs from "@emailjs/browser";
 import PageWrapper from "./PageWrapper";
 
 const contactItems = [
@@ -23,6 +30,12 @@ const contactItems = [
     href: "https://linkedin.com/in/yourusername",
   },
   {
+    icon: <FaWhatsapp />,
+    label: "WhatsApp",
+    value: "+233 54 121 9220",
+    href: "https://wa.me/233541219220",
+  },
+  {
     icon: <FaPhone />,
     label: "Phone",
     value: "+233 54 121 9220",
@@ -30,202 +43,268 @@ const contactItems = [
   },
 ];
 
-const inputClass = `
-  w-full px-4 py-3.5 rounded-2xl text-sm
-  bg-slate-50 dark:bg-slate-800/60
-  border border-slate-200 dark:border-slate-700
-  text-slate-900 dark:text-white
-  placeholder:text-slate-400 dark:placeholder:text-slate-500
-  outline-none
-  focus:border-cyan-400 dark:focus:border-cyan-500
-  focus:ring-2 focus:ring-cyan-400/10
-  transition-all duration-200
-`;
-
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 24 },
   whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, margin: "-60px" },
-  transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1], delay },
+  viewport: { once: true },
+  transition: {
+    duration: 0.6,
+    delay,
+  },
 });
 
+const inputClass = `
+  w-full
+  px-4
+  py-3.5
+  rounded-2xl
+  text-sm
+  bg-slate-50
+  dark:bg-slate-800/60
+  border
+  border-slate-200
+  dark:border-slate-700
+  text-slate-900
+  dark:text-white
+  placeholder:text-slate-400
+  dark:placeholder:text-slate-500
+  outline-none
+  focus:border-cyan-400
+  dark:focus:border-cyan-500
+  focus:ring-2
+  focus:ring-cyan-400/10
+  transition-all
+`;
+
 function Contact() {
-  const [status, setStatus] = useState("idle"); // idle | sending | sent | error
-  const [form, setForm]     = useState({ name: "", email: "", message: "" });
+  const formRef = useRef();
 
-  const handleChange = (e) =>
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  const [status, setStatus] = useState("idle");
 
-  const handleSubmit = async (e) => {
+  const sendEmail = async (e) => {
     e.preventDefault();
+
     setStatus("sending");
 
-    /* Swap this timeout for your real API call / EmailJS / Formspree */
-    await new Promise((r) => setTimeout(r, 1400));
-    setStatus("sent");
-    setForm({ name: "", email: "", message: "" });
+    try {
+      await emailjs.sendForm(
+        import.meta.env.VITE_EMAILJS_SERVICE_ID,
+        import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+        formRef.current,
+        import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+      );
+
+      setStatus("sent");
+
+      formRef.current.reset();
+
+      setTimeout(() => {
+        setStatus("idle");
+      }, 5000);
+    } catch (error) {
+      console.error(error);
+      setStatus("error");
+
+      setTimeout(() => {
+        setStatus("idle");
+      }, 5000);
+    }
   };
 
   return (
     <PageWrapper>
       <section
         id="contact"
-        className="py-28 px-6 bg-slate-50 dark:bg-slate-950 transition-colors duration-300"
+        className="
+          py-28
+          px-6
+          bg-slate-50
+          dark:bg-slate-950
+          transition-colors
+          duration-300
+        "
       >
         <div className="max-w-5xl mx-auto">
 
-          {/* Label */}
-          <motion.div {...fadeUp(0)} className="flex justify-center mb-4">
+          {/* Section Label */}
+          <motion.div
+            {...fadeUp()}
+            className="flex justify-center mb-4"
+          >
             <span className="inline-flex items-center gap-2 text-xs font-semibold tracking-widest uppercase text-cyan-500">
               <span className="w-5 h-px bg-cyan-500" />
-              Get in touch
+              Get In Touch
               <span className="w-5 h-px bg-cyan-500" />
             </span>
           </motion.div>
 
           {/* Heading */}
           <motion.h2
-            {...fadeUp(0.08)}
-            className="text-4xl md:text-5xl font-extrabold tracking-tight text-center text-slate-900 dark:text-white mb-4"
+            {...fadeUp(0.1)}
+            className="
+              text-4xl
+              md:text-5xl
+              font-bold
+              text-center
+              text-slate-900
+              dark:text-white
+              mb-4
+            "
           >
             Contact Me
           </motion.h2>
 
           <motion.p
-            {...fadeUp(0.13)}
-            className="text-center text-slate-500 dark:text-slate-400 text-base mb-16 max-w-md mx-auto"
+            {...fadeUp(0.15)}
+            className="
+              text-center
+              text-slate-500
+              dark:text-slate-400
+              max-w-md
+              mx-auto
+              mb-16
+            "
           >
-            Have a project in mind or just want to say hello? I'd love to hear from you.
+            Have a project in mind or want to work together?
+            I'd love to hear from you.
           </motion.p>
 
           <div className="grid md:grid-cols-2 gap-8">
 
-            {/* ── Left: contact info ── */}
-            <motion.div {...fadeUp(0.18)} className="flex flex-col gap-5">
-
-              {/* Tagline card */}
-              <div className="
-                bg-white dark:bg-slate-900
-                border border-slate-200 dark:border-slate-800
-                rounded-3xl p-7
-              ">
+            {/* Contact Info */}
+            <motion.div
+              {...fadeUp(0.2)}
+              className="flex flex-col gap-5"
+            >
+              <div
+                className="
+                  bg-white
+                  dark:bg-slate-900
+                  border
+                  border-slate-200
+                  dark:border-slate-800
+                  rounded-3xl
+                  p-7
+                "
+              >
                 <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
-                  Let's build something great
+                  Let's Build Something Great
                 </h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
-                  I'm open to freelance work, full-time roles, and interesting collaborations.
-                  Feel free to reach out through any of the channels below.
+
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  Open to freelance projects, collaborations,
+                  and full-time opportunities.
                 </p>
               </div>
 
-              {/* Contact items */}
-              <div className="flex flex-col gap-3">
-                {contactItems.map(({ icon, label, value, href }, i) => (
-                  <motion.a
-                    key={label}
-                    href={href}
-                    target={href.startsWith("http") ? "_blank" : undefined}
-                    rel="noreferrer"
-                    {...fadeUp(0.22 + i * 0.06)}
-                    className="
-                      group flex items-center gap-4
-                      bg-white dark:bg-slate-900
-                      border border-slate-200 dark:border-slate-800
-                      rounded-2xl px-5 py-4
-                      hover:border-cyan-400/60 dark:hover:border-cyan-500/50
-                      hover:shadow-md hover:shadow-cyan-500/5
-                      transition-all duration-200
-                    "
-                  >
-                    <span className="
-                      w-10 h-10 flex items-center justify-center rounded-xl
-                      bg-cyan-500/10 text-cyan-500
-                      group-hover:bg-cyan-500 group-hover:text-white
-                      transition-all duration-200 text-base flex-shrink-0
-                    ">
-                      {icon}
-                    </span>
-                    <div className="min-w-0">
-                      <p className="text-xs text-slate-400 mb-0.5">{label}</p>
-                      <p className="text-sm font-medium text-slate-700 dark:text-slate-300 truncate">
-                        {value}
-                      </p>
-                    </div>
-                    <span className="
-                      ml-auto text-slate-300 dark:text-slate-600
-                      group-hover:text-cyan-500 group-hover:translate-x-0.5
-                      transition-all duration-200 text-sm
-                    ">→</span>
-                  </motion.a>
-                ))}
-              </div>
+              {contactItems.map((item, index) => (
+                <motion.a
+                  key={item.label}
+                  href={item.href}
+                  target={item.href.startsWith("http") ? "_blank" : undefined}
+                  rel="noreferrer"
+                  {...fadeUp(0.25 + index * 0.05)}
+                  className="
+                    flex items-center gap-3
+                    bg-white
+                    dark:bg-slate-900
+                    border
+                    border-slate-200
+                    dark:border-slate-800
+                    rounded-2xl
+                    p-4
+                    hover:border-cyan-400
+                    transition
+                  "
+                >
+                  <span className="text-cyan-500 text-lg">
+                    {item.icon}
+                  </span>
+
+                  <div>
+                    <p className="text-xs text-slate-400">
+                      {item.label}
+                    </p>
+
+                    <p className="text-sm text-slate-700 dark:text-slate-300">
+                      {item.value}
+                    </p>
+                  </div>
+                </motion.a>
+              ))}
             </motion.div>
 
-            {/* ── Right: form ── */}
-            <motion.div {...fadeUp(0.22)}>
+            {/* Form */}
+            <motion.div {...fadeUp(0.25)}>
               <form
-                onSubmit={handleSubmit}
+                ref={formRef}
+                onSubmit={sendEmail}
                 className="
-                  bg-white dark:bg-slate-900
-                  border border-slate-200 dark:border-slate-800
-                  rounded-3xl p-8 flex flex-col gap-4
+                  bg-white
+                  dark:bg-slate-900
+                  border
+                  border-slate-200
+                  dark:border-slate-800
+                  rounded-3xl
+                  p-8
+                  flex
+                  flex-col
+                  gap-4
                 "
               >
                 <input
                   type="text"
-                  name="name"
-                  placeholder="Your name"
-                  value={form.name}
-                  onChange={handleChange}
+                  name="user_name"
+                  placeholder="Your Name"
                   required
                   className={inputClass}
                 />
 
                 <input
                   type="email"
-                  name="email"
-                  placeholder="your@email.com"
-                  value={form.email}
-                  onChange={handleChange}
+                  name="user_email"
+                  placeholder="Your Email"
                   required
                   className={inputClass}
                 />
 
                 <textarea
+                  rows="5"
                   name="message"
-                  rows={5}
                   placeholder="Tell me about your project..."
-                  value={form.message}
-                  onChange={handleChange}
                   required
                   className={`${inputClass} resize-none`}
                 />
 
                 <button
                   type="submit"
-                  disabled={status === "sending" || status === "sent"}
+                  disabled={status === "sending"}
                   className="
-                    w-full py-3.5 rounded-2xl
-                    bg-cyan-500 hover:bg-cyan-400
-                    disabled:opacity-70 disabled:cursor-not-allowed
-                    text-white font-semibold text-sm tracking-wide
-                    transition-all duration-200 hover:scale-[1.02]
-                    shadow-lg shadow-cyan-500/20
-                    flex items-center justify-center gap-2
+                    py-3.5
+                    rounded-2xl
+                    bg-cyan-500
+                    hover:bg-cyan-400
+                    disabled:opacity-70
+                    text-white
+                    font-semibold
+                    transition
                   "
                 >
-                  {status === "sending" && (
-                    <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                  )}
-                  {status === "idle"    && "Send Message →"}
-                  {status === "sending" && "Sending…"}
-                  {status === "sent"    && "✓ Message sent!"}
-                  {status === "error"   && "Failed — try again"}
+                  {status === "idle" && "Send Message"}
+                  {status === "sending" && "Sending..."}
+                  {status === "sent" && "✓ Message Sent"}
+                  {status === "error" && "Failed to Send"}
                 </button>
 
                 {status === "sent" && (
-                  <p className="text-center text-xs text-emerald-500 mt-1">
-                    Thanks! I'll get back to you as soon as possible.
+                  <p className="text-center text-sm text-green-500">
+                    Thank you! Your message has been sent.
+                  </p>
+                )}
+
+                {status === "error" && (
+                  <p className="text-center text-sm text-red-500">
+                    Something went wrong. Please try again.
                   </p>
                 )}
               </form>
